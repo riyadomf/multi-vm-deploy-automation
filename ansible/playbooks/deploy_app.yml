@@ -1,5 +1,28 @@
 - name: Deploy web app
   hosts: web_server
+  vars:
+    docker_image: riyadomf/vm-info-app
+    container_name: vm-info-app
 
   tasks:
-    - name: Pull the image from dockerhub
+    - name: Pull image from dockerhub
+      community.docker.docker_image:
+        name: "{{ docker_image }}"
+        tag: "{{ commit_hash }}"
+        source: pull
+
+    - name: Stop and remove old container if exists
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        state: absent
+
+    - name: Run container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        image: "{{ docker_image }}"
+        state: started
+        restart_policy: always
+        env:
+          COMMIT_HASH: "{{ commit_hash }}"
+        ports:
+          - "5000:5000"
