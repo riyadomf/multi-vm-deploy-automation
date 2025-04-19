@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    hostname = socket.gethostname()
+    hostname = os.environ.get("COMMIT_HASH", "unknown")
     commit_hash = os.environ.get("COMMIT_HASH", "unknown")
     return f"""
         <h1>Multi VM Deployment App</h1>

@@ -27,3 +27,6 @@ jobs:
         context: .
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/vm-info-app:${{ github.sha }}
+
+    # - name: Run Ansible playbook to deploy on VMs
+    # ansible-playbook -i ./ansible/inventory.yml ./ansible/playbooks/deploy_app.yml -e "commit_hash=$(git rev-parse HEAD)"
