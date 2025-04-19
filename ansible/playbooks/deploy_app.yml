@@ -1,0 +1,5 @@
+- name: Deploy web app
+  hosts: web_server
+
+  tasks:
+    - name: Pull the image from dockerhub

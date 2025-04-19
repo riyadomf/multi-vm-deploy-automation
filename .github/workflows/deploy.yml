@@ -1,0 +1,28 @@
+name: Docker Build and Push to Dockerhub
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+
+  build-and-deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Login to Docker Hub
+      run: echo ${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
+    - name: Build and Push Docker image
+      uses: docker/build-push-action@
+      with:
+        context: .
+        push: true
+        tags: ${{ secrets.DOCKER_USERNAME }}/vm-info-app:latest, ${{ secrets.DOCKER_USERNAME }}/vm-info-app:${{ github.sha }}

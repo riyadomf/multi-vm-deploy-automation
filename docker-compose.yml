@@ -1,0 +1,12 @@
+services:
+  webapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        COMMIT_HASH: "${COMMIT_HASH:-unknown}"
+    ports:
+      - "5000:5000"
+    environment:
+      - COMMIT_HASH=${COMMIT_HASH:-unknown}
+    restart: unless-stopped
