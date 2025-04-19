@@ -7,6 +7,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY vm-info-app .
 
-ARG COMMIT_HASH
+ARG HOSTNAME, COMMIT_HASH
 
 CMD ["python", "app.py"]
