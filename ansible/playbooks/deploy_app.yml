@@ -23,7 +23,7 @@
         state: started
         restart_policy: always
         env:
-          HOSTNAME: "{{ ansible_hostname }}"
+          VM_HOSTNAME: "{{ ansible_hostname }}"
           COMMIT_HASH: "{{ commit_hash }}"
         ports:
           - "5000:5000"

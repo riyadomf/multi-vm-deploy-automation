@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    hostname = os.environ.get("HOSTNAME", "unknown")
+    hostname = os.environ.get("VM_HOSTNAME", "unknown")
     commit_hash = os.environ.get("COMMIT_HASH", "unknown")
     return f"""
         <h1>Multi VM Deployment App</h1>
