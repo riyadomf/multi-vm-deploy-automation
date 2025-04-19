@@ -19,7 +19,7 @@
     - name: Run container
       community.docker.docker_container:
         name: "{{ container_name }}"
-        image: "{{ docker_image }}"
+        image: "{{ docker_image }}:{{ commit_hash }}"
         state: started
         restart_policy: always
         env:
@@ -27,3 +27,10 @@
           COMMIT_HASH: "{{ commit_hash }}"
         ports:
           - "5000:5000"
+
+    - name: Remove unused Docker images
+      community.docker.docker_prune:
+        images: true
+        containers: false
+        volumes: false
+        networks: false
