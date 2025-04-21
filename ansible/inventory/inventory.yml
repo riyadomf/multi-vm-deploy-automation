@@ -1,0 +1,23 @@
+all:
+  children:
+
+    web_server:
+      hosts:
+        web1:
+          ansible_host: 192.168.123.101
+        web2:
+          ansible_host: 192.168.123.102
+        web3:
+          ansible_host: 192.168.123.103
+
+    proxy_server:
+      hosts:
+        proxy1:
+          ansible_host: 192.168.123.104
+
+  vars:
+    ansible_user: omar
+    ansible_connection: ssh
+
+
+

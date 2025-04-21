@@ -1,7 +1,7 @@
 upstream app_backend {
     least_conn;
-    {% for host in web_server %}
-    server {{ host }}:{{ web_port }};
+    {% for host in groups['web_server'] %}
+    server {{ hostvars[host]['ansible_host'] }}:{{ web_port }};
     {% endfor %}
 
 }
