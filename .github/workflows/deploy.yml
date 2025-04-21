@@ -1,4 +1,4 @@
-name: Docker Build and Push to Dockerhub and run Ansible playbook to deploy
+name: CI/CD Pipeline
 
 on:
   push:
@@ -6,9 +6,9 @@ on:
 
 jobs:
 
-  build-and-deploy:
-
-    runs-on: self-hosted
+  build:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout Repository
@@ -27,7 +27,16 @@ jobs:
         context: .
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/vm-info-app:${{ github.sha }}
+  
+  deploy:
+    name: Deploy via Ansible
+    needs: build
+    runs-on: self-hosted
 
-    - name: Run Ansible playbook to deploy on VMs
-      run: |
-        ansible-playbook -i ./ansible/inventory ./ansible/playbooks/deploy_app.yml -e "commit_hash=$(git rev-parse HEAD)"
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run Ansible playbook
+        run: |
+          ansible-playbook -i ./ansible/inventory ./ansible/playbooks/deploy_app.yml -e "commit_hash=${{ github.sha }}"
