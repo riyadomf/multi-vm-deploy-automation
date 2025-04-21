@@ -1,0 +1,7 @@
+---
+# vars file for nginx_proxy
+web_server:
+  - 192.168.123.201
+
+web_port: 5000
+domain_name: myapp.com
