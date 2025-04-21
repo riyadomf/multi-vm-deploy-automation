@@ -1,5 +1,7 @@
 - name: Install docker
-  hosts: web_server
+  hosts:
+    - web_server
+    - proxy_server
   become: true
   roles:
     - role: docker
