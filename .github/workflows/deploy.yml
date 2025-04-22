@@ -37,6 +37,9 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Debug commit hash
+        run: echo "${{ github.sha }}"
+
       - name: Run Ansible playbook
         run: |
           ansible-playbook -i ./ansible/inventory ./ansible/playbooks/deploy_app.yml -e "commit_hash=${{ github.sha }}"
