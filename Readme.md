@@ -1,6 +1,3 @@
 ## Reverse Proxy Demo
 
-<video width="640" height="360" controls>
-  <source src="documentation/multi-vm-deployment.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+[▶️ Watch the demo](./documentation/multi-vm-deployment.mp4)
