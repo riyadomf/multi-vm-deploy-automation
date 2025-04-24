@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'web_servers'
+    static_configs:
+      - targets:
+{% for ip in groups['web_server'] %}
+        - '{{ hostvars[ip]["ansible_host"] }}:{{ prometheus_target_port }}'
+{% endfor %}

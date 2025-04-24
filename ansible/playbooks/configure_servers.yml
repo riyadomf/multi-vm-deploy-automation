@@ -22,3 +22,30 @@
         nginx_config_file: reverse_proxy.conf
         web_port: 5000
         domain_name: myapp.com
+
+- name: Configure monitoring
+  hosts: proxy_server
+  become: true
+  roles:
+    - role: monitoring
+      vars:
+        prometheus_target_port: 9100
+        prometheus_host: "{{ ansible_host }}"
+        prometheus_port: 9090
+        grafana_host: "{{ ansible_host }}"
+        grafana_port: 3000
+        GF_SECURITY_ADMIN_PASSWORD: "admin"
+
+
+- name: Install Node Exporter
+  hosts: web_server
+  become: true
+  tasks:
+    - name: Run Node Exporter
+      community.docker.docker_container:
+        name: node_exporter
+        image: prom/node-exporter:latest
+        state: started
+        restart_policy: always
+        ports:
+          - "9100:9100"

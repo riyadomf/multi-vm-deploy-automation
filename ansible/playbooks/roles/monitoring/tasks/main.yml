@@ -1,0 +1,69 @@
+---
+# tasks file for monitoring
+
+- name: Create directory for monitoring configuration
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /opt/infrastructure/config/prometheus
+    - /opt/infrastructure/volumes/.prometheus_data
+    - /opt/infrastructure/config/grafana/provisioning/datasources
+    - /opt/infrastructure/config/grafana/provisioning/dashboards
+
+- name: Ensure Prometheus data directory has correct ownership
+  ansible.builtin.file:
+    path: /opt/infrastructure/volumes/.prometheus_data
+    owner: 65534
+    group: 65534
+    recurse: true
+    state: directory
+
+- name: Template Prometheus config
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: /opt/infrastructure/config/prometheus/prometheus.yml
+    mode: '0644'
+
+- name: Template Prometheus datasource for Grafana
+  ansible.builtin.template:
+    src: prometheus_datasource.yml.j2
+    dest: /opt/infrastructure/config/grafana/provisioning/datasources/prometheus_datasource.yml
+    mode: '0644'
+
+- name: Copy Grafana dashboard config
+  ansible.builtin.copy:
+    src: dashboard.yml
+    dest: /opt/infrastructure/config/grafana/provisioning/dashboards/dashboard.yml
+    mode: '0644'
+
+- name: Copy Grafana dashboard JSON
+  ansible.builtin.copy:
+    src: system_metrics_dashboard.json
+    dest: /opt/infrastructure/config/grafana/provisioning/dashboards/system_metrics_dashboard.json
+    mode: '0644'
+
+- name: Run Prometheus container
+  community.docker.docker_container:
+    name: prometheus
+    image: prom/prometheus:latest
+    state: started
+    restart_policy: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - /opt/infrastructure/config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - /opt/infrastructure/volumes/.prometheus_data:/prometheus
+
+- name: Run Grafana container
+  community.docker.docker_container:
+    name: grafana
+    image: grafana/grafana-oss:latest
+    state: started
+    restart_policy: always
+    recreate: true
+    ports:
+      - "3000:3000"
+    volumes:
+      - /opt/infrastructure/config/grafana/provisioning:/etc/grafana/provisioning
