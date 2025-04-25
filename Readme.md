@@ -2,23 +2,28 @@
 
 [Problem Description](./documentation/DevOps_Problem1.pdf)
 
+## Virtual Machines
+
+- **VM1, VM2, VM3**: Web App Servers
+- **VM4**: Reverse Proxy + Monitoring + CI/CD Runner
+
 ## Configuration Steps
 
-1. Configure Virtual Machines
-    * Create a VM in VirtualBox with the Host-Only network and NAT and Assign an IP address from the network 192.168.123.0/24
-        * Change the IP range from vbox config in host machine where virbualbox is installed
+1. **Configure Virtual Machines**
+    * Create a VM in VirtualBox with the Host-Only network and NAT and assign an IP from `192.168.123.0/24`.
+        * Update VirtualBox config to allow the specified range:
             ```bash
             echo "* 192.168.123.0/0" | sudo tee -a /etc/vbox/networks.conf
             ```
             More details: https://www.virtualbox.org/manual/ch06.html#network_hostonly
 
-        * Create a `host-only` network adapter with IPV4 address `192.168.123.1` and Network Mask `255.255.255.0` called `vboxnet0` in virtualbox.
+        * Create a `host-only` network adapter `vboxnet0` with IP `192.168.123.1` and mask `255.255.255.0`.
 
         * Select both Host only and NAT network adapter from VM's network settings
             * Host only: For assigning static IP with specified IP range. VMs and Host will be in the same network
-            * NAT: For using Network Address Translation to connect with internet
+            * NAT: For using Network Address Translation to access internet
         
-        * **Configure Static IP with Netplan**.
+        * Configure Static IP with Netplan
 
             Example: /etc/netplan/*.yaml
             ```yaml
@@ -31,13 +36,15 @@
                 enp0s8:  # NAT (default gateway & DNS)
                     dhcp4: true
             ```
+
+            Apply the changes with
             ```bash
             sudo netplan apply
             ```
 
 
-     * Clone 3 more VMs from the first VM. 
-        * Change hostname and machine-id.
+    * Clone 3 more VMs from the first VM and Configure: 
+        * Update hostname and machine-id.
             
             ```bash
             sudo hostnamectl set-hostname <new-hostname>
@@ -48,21 +55,7 @@
             sudo systemd-machine-id-setup
             ```
 
-        * Update Static IP in netplan and Assign each VM an IP address from the network 192.168.123.0/24 similarly.
-            ```yaml
-            network:
-                version: 2
-                ethernets:
-                enp0s3:
-                    addresses:
-                    - 192.168.123.102/24
-                enp0s8:
-                    dhcp4: true
-            ```
-            ```bash
-            sudo netplan apply
-            ```
-
+        * Update IP in netplan for each VM (e.g., 192.168.123.102, 103, 104).
 
 2. **Known Hosts Setup**
     * ssh-keyscan is used to grab the remote host key without connecting interactively and store it in `~/.ssh/known_hosts`.
@@ -74,29 +67,29 @@
         ssh-keygen -f "~/.ssh/known_hosts" -R "192.168.123.101"
         ```
 
-3. **Setup Passwordless Authentication** so that Ansible can ssh access from host machine to remote machines.
+3. **Passwordless SSH Authentication** so that Ansible can ssh from host machine to remote machines programmatically.
    - Generate SSH Key:
      ```bash
      ssh-keygen -t rsa -b 4096 -C "riyad.omf@gmail.com"
      ```
-   - Copy key to each VM:
+   - Copy public key to each VM:
      ```bash
      ssh-copy-id omar@192.168.123.101
      ```
 
 
-4. **Setup Ansible** on the 4th VM (reverse proxy) which is also used to ssh into all the webserver's for deployment
+4. **Install Ansible on VM4 (Reverse Proxy)**
    ```bash
    sudo apt update
    sudo apt install ansible -y
    ```
 
-   Ensure Passwordless SSH access similarly from VM4 (nginx reverse proxy) to the 3 webser VMs since it's used for deploying the app in all 3 VMs based on github actions event.
+   Ensure passwordless SSH to VM1-3 from VM4 since VM4 is used for deploying the app in all 3 VMs based on github actions event.
 
-5. **Configure Self-hosted GitHub Runner**
+5. **Configure Self-hosted GitHub Runner on VM4**
    - [Runner Setup as a Service](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/configuring-the-self-hosted-runner-application-as-a-service)
 
----
+
 ## How to Run
 
 ### 1. Run the Ansible Playbook
@@ -110,25 +103,24 @@ This will configure Docker, nginx reverse proxy, prometheus, grafana, and node e
 - Push to the `deployment` branch.
 - GitHub Actions will:
   - Build and push the Docker image.
-  - Trigger Ansible playbook via self-hosted runner to deploy the image.
+  - Trigger Ansible playbook via self-hosted runner (VM4) to deploy the image.
 
-### 3. Test Domain Access
-Add this to `/etc/hosts` on host machine:
+### 3. Access App via Domain
+Update `/etc/hosts` on **host machine**:
 ```
 192.168.123.104 myapp.com
 ```
 
-Then open:
+Then access:
 ```
 http://myapp.com
 ```
 
----
 
 ## Monitoring
-- Prometheus scrapes data from the web servers using Node Exporter.
-- Grafana dashboards display system metrics from all 3 webserver VMs.
-- Accessible from the reverse proxy machine at:
+- **Prometheus** scrapes data from Node Exporter on each web server.
+- **Grafana** visualitzes system metrics
+- Access Grafana
   ```
   http://myapp.com:3000
   ```
