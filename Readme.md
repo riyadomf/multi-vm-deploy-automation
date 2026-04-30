@@ -13,7 +13,7 @@
     * Create a VM in VirtualBox with the Host-Only network and NAT and assign an IP from `192.168.123.0/24`.
         * Update VirtualBox config to allow the specified range:
             ```bash
-            echo "* 192.168.123.0/0" | sudo tee -a /etc/vbox/networks.conf
+            echo "* 192.168.123.0/24" | sudo tee -a /etc/vbox/networks.conf
             ```
             More details: https://www.virtualbox.org/manual/ch06.html#network_hostonly
 
